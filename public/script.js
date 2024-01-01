@@ -18,28 +18,44 @@ const vartalabh=document.getElementById("mess");
 
 //let userName;
 const socket= io()
-let  banda;
-if(localStorage.getItem('bandanam')){
-    banda=localStorage.getItem('bandanam')
-    socket.emit("bandanam", banda);
-}
-else
-{
-    // Use window.prompt to get user input
- const userName = prompt('Please enter your name:');
+let banda;
 
-// Check if the user entered a name
-if (userName) {
-    alert('Hello, ' + userName + '!'); // Display a greeting with the entered name
+if (localStorage.getItem('bandanam')) {
+    banda = localStorage.getItem('bandanam');
+    socket.emit("bandanam", banda, (ack) => {
+        if (ack.error) {
+            // Handle the error, e.g., prompt the user to enter a new name
+            const userName = prompt('Please enter your name:');
+            if (userName) {
+                socket.emit("bandanam", userName, (ack) => {
+                    if (ack.error) {
+                        console.error('Error setting bandanam:', ack.error);
+                        // Handle the error appropriately
+                    } else {
+                        localStorage.setItem("bandanam", userName);
+                    }
+                });
+            } else {
+                // Handle the case where the user did not enter a new name
+            }
+        }
+    });
 } else {
-    alert('You did not enter a name.'); // Display a message if no name is entered
+    const userName = prompt('Please enter your name:');
+    if (userName) {
+        socket.emit("bandanam", userName, (ack) => {
+            if (ack.error) {
+                console.error('Error setting bandanam:', ack.error);
+                // Handle the error appropriately
+            } else {
+                localStorage.setItem("bandanam", userName);
+            }
+        });
+    } else {
+        // Handle the case where the user did not enter a name
+    }
 }
 
-console.log(userName);
-socket.emit("bandanam", userName);
-localStorage.setItem("bandanam", userName);
-
-}
 
 function scrollToBottom() {
     // Select the element you want to scroll to the bottom
@@ -183,4 +199,5 @@ socket.on('load messages', (messages) => {
 
     scrollToBottom();
 });
+
 
